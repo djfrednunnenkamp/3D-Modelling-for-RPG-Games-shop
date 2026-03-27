@@ -1,0 +1,157 @@
+.home {
+  min-height: calc(100vh - 60px);
+}
+
+/* HERO */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 4rem;
+  padding: 5rem 4rem;
+  min-height: 80vh;
+}
+
+.hero-eyebrow {
+  color: #f97316;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #e8e8e8;
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-accent {
+  color: #f97316;
+}
+
+.hero-subtitle {
+  color: #999;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 0 2.5rem;
+}
+
+.cta-btn {
+  background: #f97316;
+  color: #111;
+  border: none;
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.cta-btn:hover {
+  background: #ea6a0a;
+  transform: translateY(-2px);
+}
+
+/* HERO VISUAL */
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 12px;
+}
+
+.grid-item {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  animation: pulse 3s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.grid-item.accent {
+  background: #2a1500;
+  border-color: #f97316;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* FEATURES */
+.features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: #222;
+  border-top: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+
+.feature {
+  background: #141414;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.feature-icon {
+  font-size: 1.8rem;
+  color: #f97316;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.feature h3 {
+  color: #e8e8e8;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.7rem;
+  letter-spacing: 0.03em;
+}
+
+.feature p {
+  color: #888;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CTA SECTION */
+.cta-section {
+  text-align: center;
+  padding: 5rem 2rem;
+}
+
+.cta-section h2 {
+  color: #e8e8e8;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 2rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+  .hero-title { font-size: 2rem; }
+  .hero-subtitle { margin: 0 auto 2rem; }
+  .hero-visual { display: none; }
+  .features { grid-template-columns: repeat(2, 1fr); }
+}
