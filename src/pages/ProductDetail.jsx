@@ -53,6 +53,8 @@ export default function ProductDetail() {
       ? [product.image_url]
       : ['/placeholder.svg']
 
+  const hasRealImage = product.image_urls?.length > 0 || !!product.image_url
+
   function prev() {
     setSelectedIdx(i => (i - 1 + images.length) % images.length)
   }
@@ -70,14 +72,14 @@ export default function ProductDetail() {
       <div className="detail-layout">
         <div className="detail-image-col">
           <div
-            className={`detail-image-wrapper ${zoomed ? 'is-zoomed' : ''}`}
-            onMouseEnter={() => setZoomed(true)}
+            className={`detail-image-wrapper ${hasRealImage && zoomed ? 'is-zoomed' : ''}`}
+            onMouseEnter={() => hasRealImage && setZoomed(true)}
             onMouseLeave={() => setZoomed(false)}
-            onMouseMove={handleMouseMove}
+            onMouseMove={hasRealImage ? handleMouseMove : undefined}
           >
             <span className="detail-category">{product.category}</span>
 
-            {!zoomed && (
+            {hasRealImage && !zoomed && (
               <span className="zoom-hint">🔍 Hover to zoom</span>
             )}
 
@@ -85,7 +87,7 @@ export default function ProductDetail() {
               src={images[selectedIdx]}
               alt={product.name}
               className="detail-image"
-              style={zoomed ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
+              style={hasRealImage && zoomed ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
               onError={e => { e.currentTarget.src = '/placeholder.svg' }}
             />
 
