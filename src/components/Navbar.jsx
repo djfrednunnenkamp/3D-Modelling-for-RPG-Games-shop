@@ -7,7 +7,7 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <Link to="/" className="navbar-brand">
-        <span className="brand-accent">&#9632;</span> PEÇAS 3D
+        <span className="brand-accent">&#9632;</span> Dungeon Prints
       </Link>
       <div className="navbar-links">
         <Link to="/" className={pathname === '/' ? 'active' : ''}>
@@ -16,10 +16,10 @@ export default function Navbar() {
         <Link to="/catalogo" className={pathname.startsWith('/catalogo') || pathname.startsWith('/produto') ? 'active' : ''}>
           Catalog
         </Link>
-        <Link to="/personalizado" className={`nav-custom ${pathname === '/personalizado' ? 'active' : ''}`}>
-          ✦ Custom Order
-        </Link>
       </div>
+      <Link to="/personalizado" className={`nav-custom ${pathname === '/personalizado' ? 'active' : ''}`}>
+        ✦ Custom Order
+      </Link>
     </nav>
   )
 }

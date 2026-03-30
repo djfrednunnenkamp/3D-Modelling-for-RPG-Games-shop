@@ -45,7 +45,7 @@ export default function ProductDetail() {
       <div className="detail-layout">
         <div className="detail-image-wrapper">
           <span className="detail-category">{product.category}</span>
-          <img src={product.image_url} alt={product.name} className="detail-image" />
+          <img src={product.image_url || '/placeholder.svg'} alt={product.name} className="detail-image" onError={e => { e.currentTarget.src = '/placeholder.svg' }} />
         </div>
 
         <div className="detail-info">

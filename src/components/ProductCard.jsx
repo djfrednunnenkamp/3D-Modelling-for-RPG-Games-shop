@@ -12,9 +12,8 @@ export default function ProductCard({ product }) {
   return (
     <div className="product-card" onClick={() => navigate(`/produto/${product.id}`)}>
       <div className="card-image-wrapper">
-        <img src={product.image_url} alt={product.name} className="card-image" />
+        <img src={product.image_url || '/placeholder.svg'} alt={product.name} className="card-image" onError={e => { e.currentTarget.src = '/placeholder.svg' }} />
         {product.category && <span className="card-category">{product.category}</span>}
-        {product.painted && <span className="card-badge badge-painted">✦ Painted</span>}
       </div>
       <div className="card-body">
         <h3 className="card-name">{product.name}</h3>
