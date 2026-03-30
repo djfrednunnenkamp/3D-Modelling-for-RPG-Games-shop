@@ -5,13 +5,13 @@ const PHONE = '999311574'
 const STEPS = [
   {
     icon: '💬',
-    title: 'Get in touch',
+    title: 'Contact',
     desc: 'Message us on WhatsApp and describe what you need.',
   },
   {
     icon: '🎨',
-    title: 'Choose the details',
-    desc: 'Pick your material, color, scale and any special detail for your piece.',
+    title: 'Customize',
+    desc: 'Choose the color, scale and any special detail for your piece.',
   },
   {
     icon: '⚙️',
@@ -26,7 +26,6 @@ const STEPS = [
 ]
 
 const OPTIONS = [
-  { label: 'Material', items: ['PLA', 'Resin', 'PETG', 'ABS'] },
   { label: 'Finish', items: ['Raw', 'Sanded', 'Painted', 'Varnished'] },
   { label: 'Scale', items: ['28mm', '32mm', '54mm', 'Custom'] },
   { label: 'Theme', items: ['D&D / RPG', 'Fantasy', 'Sci-Fi', 'Decoration'] },
@@ -46,7 +45,7 @@ export default function CustomOrder() {
           <span className="custom-hero-tag">✦ Made just for you</span>
           <h1>Custom Orders</h1>
           <p>
-            Can't find what you're looking for in the catalog? We create any piece on demand —
+            Can't find what you're looking for in the catalog? We create any piece on demand:
             miniatures, terrain, props and more for your RPG table.
           </p>
           <a className="custom-cta" href={href} target="_blank" rel="noopener noreferrer">
@@ -75,7 +74,7 @@ export default function CustomOrder() {
 
       {/* Options */}
       <section className="custom-section">
-        <h2 className="section-title">What you can customize</h2>
+        <h2 className="section-title">Customize it your way</h2>
         <div className="options-grid">
           {OPTIONS.map((opt) => (
             <div key={opt.label} className="option-card">

@@ -20,7 +20,7 @@ export default function Catalog() {
   return (
     <div className="catalog">
       <div className="catalog-header">
-        <h1 className="catalog-title">Piece Catalog</h1>
+        <h1 className="catalog-title">The RPG Collection</h1>
         <p className="catalog-subtitle">{products.length} pieces available</p>
       </div>
 

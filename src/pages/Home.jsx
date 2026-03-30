@@ -39,8 +39,8 @@ export default function Home() {
       <section className="features">
         <div className="feature">
           <span className="feature-icon">⬡</span>
-          <h3>Premium Materials</h3>
-          <p>PLA+, PETG, ABS, Resin and more. The right material for every miniature and terrain piece.</p>
+          <h3>Eco-Friendly Materials</h3>
+          <p>Our miniatures are printed in PLA, a biodegradable filament made from renewable resources.</p>
         </div>
         <div className="feature">
           <span className="feature-icon">⬡</span>
@@ -50,7 +50,7 @@ export default function Home() {
         <div className="feature">
           <span className="feature-icon">⬡</span>
           <h3>Fast Delivery</h3>
-          <p>Catalog items ready within 48h. Custom orders shipped as agreed — your quest won't wait.</p>
+          <p>Catalog items ready fast. Custom orders shipped as agreed. Your quest won't wait.</p>
         </div>
         <div className="feature">
           <span className="feature-icon">⬡</span>
