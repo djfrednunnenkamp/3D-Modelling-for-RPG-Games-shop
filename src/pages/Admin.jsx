@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import {
@@ -6,24 +6,31 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  uploadProductImage,
+  deleteProductImages,
 } from '../lib/supabase'
+import ImageUploadZone from '../components/ImageUploadZone'
 import './Admin.css'
 
-const EMPTY_FORM = { name: '', description: '', price: '', image_url: '', category: '', material: '', painted: false }
+const EMPTY_FORM = {
+  name: '',
+  description: '',
+  price: '',
+  image_url: '',
+  image_urls: [],
+  category: '',
+  material: '',
+  painted: false,
+}
 
 export default function Admin() {
   const { logout } = useAuth()
   const navigate = useNavigate()
-  const fileInputRef = useRef(null)
 
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
-  const [uploadProgress, setUploadProgress] = useState(0)
   const [uploading, setUploading] = useState(false)
-  const [dragOver, setDragOver] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null)
 
@@ -51,6 +58,7 @@ export default function Admin() {
       description: product.description || '',
       price: product.price || '',
       image_url: product.image_url || '',
+      image_urls: product.image_urls || [],
       category: product.category || '',
       material: product.material || '',
       painted: product.painted ?? false,
@@ -63,59 +71,22 @@ export default function Admin() {
     setForm(EMPTY_FORM)
   }
 
-  async function processUpload(file) {
-    if (!file) return
-    if (!file.type.startsWith('image/')) {
-      showMessage('Please select an image file only.', 'error')
-      return
-    }
-    setUploading(true)
-    setUploadProgress(0)
-
-    // Animação de progresso simulada até 85%, depois finaliza ao completar
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 85) { clearInterval(interval); return prev }
-        return prev + Math.random() * 12
-      })
-    }, 200)
-
-    try {
-      const url = await uploadProductImage(file)
-      clearInterval(interval)
-      setUploadProgress(100)
-      setForm((f) => ({ ...f, image_url: url }))
-      showMessage('Image uploaded successfully!')
-      setTimeout(() => setUploadProgress(0), 800)
-    } catch (err) {
-      clearInterval(interval)
-      setUploadProgress(0)
-      showMessage(`Erro no upload: ${err.message}`, 'error')
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  function handleFileInput(e) {
-    processUpload(e.target.files[0])
-  }
-
-  function handleDrop(e) {
-    e.preventDefault()
-    setDragOver(false)
-    processUpload(e.dataTransfer.files[0])
-  }
-
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
     try {
-      const data = { ...form, price: parseFloat(form.price) }
+      const image_url = form.image_urls[0] || form.image_url || ''
+
       if (editingId) {
-        await updateProduct(editingId, data)
+        const original = products.find(p => p.id === editingId)
+        const originalUrls = original?.image_urls || []
+        const removedUrls = originalUrls.filter(u => !form.image_urls.includes(u))
+        if (removedUrls.length > 0) await deleteProductImages(removedUrls)
+
+        await updateProduct(editingId, { ...form, price: parseFloat(form.price), image_url })
         showMessage('Product updated successfully!')
       } else {
-        await createProduct(data)
+        await createProduct({ ...form, price: parseFloat(form.price), image_url })
         showMessage('Product added successfully!')
       }
       setEditingId(null)
@@ -128,10 +99,10 @@ export default function Admin() {
     }
   }
 
-  async function handleDelete(id, imageUrl) {
+  async function handleDelete(id, imageUrl, imageUrls) {
     if (!window.confirm('Are you sure you want to delete this product?')) return
     try {
-      await deleteProduct(id, imageUrl)
+      await deleteProduct(id, imageUrl, imageUrls)
       showMessage('Product deleted!')
       await loadProducts()
     } catch (err) {
@@ -226,6 +197,7 @@ export default function Admin() {
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label>Material</label>
                 <select
@@ -260,56 +232,15 @@ export default function Admin() {
                 </div>
               </div>
 
-              {/* Upload area */}
               <div className="form-group">
-                <label>Product Image</label>
-                <div
-                  className={`upload-area ${dragOver ? 'drag-over' : ''} ${uploading ? 'uploading' : ''}`}
-                  onClick={() => !uploading && fileInputRef.current?.click()}
-                  onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleDrop}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileInput}
-                    disabled={uploading}
-                    style={{ display: 'none' }}
-                  />
-
-                  {form.image_url && !uploading ? (
-                    <div className="upload-preview">
-                      <img src={form.image_url} alt="preview" />
-                      <div className="upload-overlay">
-                        <span>Click to change</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="upload-placeholder">
-                      <div className="upload-icon">↑</div>
-                      <p>{uploading ? 'Uploading image...' : 'Click or drag image here'}</p>
-                      <span>PNG, JPG, WEBP up to 5MB</span>
-                    </div>
-                  )}
-
-                  {uploading && (
-                    <div className="progress-bar-wrap">
-                      <div
-                        className="progress-bar-fill"
-                        style={{ width: `${Math.min(uploadProgress, 100)}%` }}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {uploading && (
-                  <div className="progress-label">
-                    <span>Uploading...</span>
-                    <span>{Math.round(Math.min(uploadProgress, 100))}%</span>
-                  </div>
-                )}
+                <label>Photos {form.image_urls.length > 0 && `(${form.image_urls.length})`}</label>
+                <ImageUploadZone
+                  images={form.image_urls}
+                  onChange={(urls) => setForm(f => ({ ...f, image_urls: urls }))}
+                  uploading={uploading}
+                  onUploadingChange={setUploading}
+                  showMessage={showMessage}
+                />
               </div>
 
               <div className="form-actions">
@@ -344,25 +275,28 @@ export default function Admin() {
               </div>
             ) : (
               <div className="products-list">
-                {products.map((p) => (
-                  <div key={p.id} className={`product-row ${editingId === p.id ? 'editing' : ''}`}>
-                    <div className="product-thumb">
-                      {p.image_url
-                        ? <img src={p.image_url} alt={p.name} />
-                        : <div className="thumb-placeholder">◈</div>
-                      }
+                {products.map((p) => {
+                  const thumb = p.image_urls?.[0] || p.image_url
+                  return (
+                    <div key={p.id} className={`product-row ${editingId === p.id ? 'editing' : ''}`}>
+                      <div className="product-thumb">
+                        {thumb
+                          ? <img src={thumb} alt={p.name} />
+                          : <div className="thumb-placeholder">◈</div>
+                        }
+                      </div>
+                      <div className="product-info">
+                        <strong>{p.name}</strong>
+                        {p.category && <span className="product-tag">{p.category}</span>}
+                        <span className="product-price">R$ {Number(p.price).toFixed(2)}</span>
+                      </div>
+                      <div className="product-actions">
+                        <button className="btn-edit" onClick={() => handleEdit(p)} title="Edit">✎</button>
+                        <button className="btn-delete" onClick={() => handleDelete(p.id, p.image_url, p.image_urls)} title="Delete">✕</button>
+                      </div>
                     </div>
-                    <div className="product-info">
-                      <strong>{p.name}</strong>
-                      {p.category && <span className="product-tag">{p.category}</span>}
-                      <span className="product-price">R$ {Number(p.price).toFixed(2)}</span>
-                    </div>
-                    <div className="product-actions">
-                      <button className="btn-edit" onClick={() => handleEdit(p)} title="Edit">✎</button>
-                      <button className="btn-delete" onClick={() => handleDelete(p.id, p.image_url)} title="Delete">✕</button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </section>

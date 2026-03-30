@@ -23,27 +23,31 @@ export async function getProductById(id) {
 }
 
 export async function createProduct(product) {
-  const { data, error } = await supabase.from('products').insert([product]).select().single()
+  const { error } = await supabase.from('products').insert([product])
   if (error) throw error
-  return data
 }
 
 export async function updateProduct(id, product) {
-  const { data, error } = await supabase.from('products').update(product).eq('id', id).select().single()
+  const { error } = await supabase.from('products').update(product).eq('id', id)
   if (error) throw error
-  return data
 }
 
-export async function deleteProduct(id, imageUrl) {
+export async function deleteProduct(id, imageUrl, imageUrls = []) {
   const { error } = await supabase.from('products').delete().eq('id', id)
   if (error) throw error
 
-  // Apaga a imagem do Storage se for do Supabase
-  if (imageUrl && imageUrl.includes('/storage/v1/object/public/produtos/')) {
-    const filename = imageUrl.split('/storage/v1/object/public/produtos/')[1]
-    if (filename) {
-      await supabase.storage.from('produtos').remove([filename])
-    }
+  const allUrls = [...new Set([imageUrl, ...imageUrls].filter(Boolean))]
+  await deleteProductImages(allUrls)
+}
+
+export async function deleteProductImages(urls = []) {
+  if (!supabase) return
+  const filenames = urls
+    .filter(u => u && u.includes('/storage/v1/object/public/produtos/'))
+    .map(u => u.split('/storage/v1/object/public/produtos/')[1])
+    .filter(Boolean)
+  if (filenames.length > 0) {
+    await supabase.storage.from('produtos').remove(filenames)
   }
 }
 

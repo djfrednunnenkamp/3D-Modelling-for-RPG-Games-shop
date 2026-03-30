@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import WhatsAppButton from '../components/WhatsAppButton'
 import { getProductById } from '../lib/supabase'
@@ -9,8 +9,10 @@ export default function ProductDetail() {
   const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [selectedIdx, setSelectedIdx] = useState(0)
 
   useEffect(() => {
+    setSelectedIdx(0)
     getProductById(id)
       .then(setProduct)
       .finally(() => setLoading(false))
@@ -36,6 +38,12 @@ export default function ProductDetail() {
     currency: 'BRL',
   })
 
+  const images = product.image_urls?.length > 0
+    ? product.image_urls
+    : product.image_url
+      ? [product.image_url]
+      : ['/placeholder.svg']
+
   return (
     <div className="detail">
       <button className="back-btn" onClick={() => navigate('/catalogo')}>
@@ -45,7 +53,25 @@ export default function ProductDetail() {
       <div className="detail-layout">
         <div className="detail-image-wrapper">
           <span className="detail-category">{product.category}</span>
-          <img src={product.image_url || '/placeholder.svg'} alt={product.name} className="detail-image" onError={e => { e.currentTarget.src = '/placeholder.svg' }} />
+          <img
+            src={images[selectedIdx]}
+            alt={product.name}
+            className="detail-image"
+            onError={e => { e.currentTarget.src = '/placeholder.svg' }}
+          />
+          {images.length > 1 && (
+            <div className="detail-thumbnails">
+              {images.map((url, i) => (
+                <button
+                  key={i}
+                  className={`detail-thumb-btn ${i === selectedIdx ? 'active' : ''}`}
+                  onClick={() => setSelectedIdx(i)}
+                >
+                  <img src={url} alt={`${product.name} ${i + 1}`} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="detail-info">

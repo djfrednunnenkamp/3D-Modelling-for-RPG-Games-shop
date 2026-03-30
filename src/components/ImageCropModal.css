@@ -1,0 +1,99 @@
+.crop-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.crop-card {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.crop-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e8e8e8;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.crop-container {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.crop-zoom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.crop-zoom-slider {
+  flex: 1;
+  accent-color: #ff6b35;
+  cursor: pointer;
+}
+
+.crop-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.crop-actions .btn-cancel {
+  padding: 0.7rem 1.2rem;
+  background: #222;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid #333;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.crop-actions .btn-cancel:hover:not(:disabled) {
+  background: #2a2a2a;
+  color: white;
+}
+
+.crop-actions .btn-save {
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(135deg, #ff6b35, #ff8c42);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.crop-actions .btn-save:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.crop-actions .btn-save:disabled,
+.crop-actions .btn-cancel:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
