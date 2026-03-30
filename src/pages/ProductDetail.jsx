@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import WhatsAppButton from '../components/WhatsAppButton'
 import { getProductById } from '../lib/supabase'
@@ -10,6 +10,8 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedIdx, setSelectedIdx] = useState(0)
+  const [zoomed, setZoomed] = useState(false)
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 })
 
   useEffect(() => {
     setSelectedIdx(0)
@@ -17,6 +19,13 @@ export default function ProductDetail() {
       .then(setProduct)
       .finally(() => setLoading(false))
   }, [id])
+
+  function handleMouseMove(e) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setZoomPos({ x, y })
+  }
 
   if (loading) {
     return <div className="detail-loading">Loading...</div>
@@ -44,6 +53,14 @@ export default function ProductDetail() {
       ? [product.image_url]
       : ['/placeholder.svg']
 
+  function prev() {
+    setSelectedIdx(i => (i - 1 + images.length) % images.length)
+  }
+
+  function next() {
+    setSelectedIdx(i => (i + 1) % images.length)
+  }
+
   return (
     <div className="detail">
       <button className="back-btn" onClick={() => navigate('/catalogo')}>
@@ -51,14 +68,39 @@ export default function ProductDetail() {
       </button>
 
       <div className="detail-layout">
-        <div className="detail-image-wrapper">
-          <span className="detail-category">{product.category}</span>
-          <img
-            src={images[selectedIdx]}
-            alt={product.name}
-            className="detail-image"
-            onError={e => { e.currentTarget.src = '/placeholder.svg' }}
-          />
+        <div className="detail-image-col">
+          <div
+            className={`detail-image-wrapper ${zoomed ? 'is-zoomed' : ''}`}
+            onMouseEnter={() => setZoomed(true)}
+            onMouseLeave={() => setZoomed(false)}
+            onMouseMove={handleMouseMove}
+          >
+            <span className="detail-category">{product.category}</span>
+
+            {!zoomed && (
+              <span className="zoom-hint">🔍 Hover to zoom</span>
+            )}
+
+            <img
+              src={images[selectedIdx]}
+              alt={product.name}
+              className="detail-image"
+              style={zoomed ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
+              onError={e => { e.currentTarget.src = '/placeholder.svg' }}
+            />
+
+            {images.length > 1 && (
+              <>
+                <button className="img-nav-btn img-nav-prev" onClick={e => { e.stopPropagation(); prev() }}>
+                  ‹
+                </button>
+                <button className="img-nav-btn img-nav-next" onClick={e => { e.stopPropagation(); next() }}>
+                  ›
+                </button>
+              </>
+            )}
+          </div>
+
           {images.length > 1 && (
             <div className="detail-thumbnails">
               {images.map((url, i) => (

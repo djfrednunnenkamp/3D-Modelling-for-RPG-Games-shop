@@ -14,7 +14,7 @@ export default function Catalog() {
       .finally(() => setLoading(false))
   }, [])
 
-  const categories = ['All', ...new Set(products.map((p) => p.category))]
+  const categories = ['All', ...new Set(products.map((p) => p.category).filter(Boolean))]
   const filtered = filter === 'All' ? products : products.filter((p) => p.category === filter)
 
   return (

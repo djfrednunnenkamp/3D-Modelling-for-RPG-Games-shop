@@ -639,6 +639,193 @@
   background: rgba(252, 129, 74, 0.22);
 }
 
+/* Sidebar links como botões */
+.sidebar-link {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+/* Settings layout */
+.settings-layout {
+  max-width: 540px;
+}
+
+/* Attributes layout — 2 colunas */
+.attributes-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.settings-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.4rem;
+}
+
+.settings-section-desc {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.settings-section-desc code {
+  background: #222;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.8rem;
+  color: #ff9a5c;
+}
+
+/* Add material row */
+.materials-add-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.settings-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: #1e1e1e;
+  border: 1.5px solid #2a2a2a;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #e8e8e8;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.settings-input::placeholder {
+  color: rgba(255,255,255,0.2);
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: #ff6b35;
+  background: rgba(255,107,53,0.05);
+}
+
+.btn-add-material {
+  flex: none;
+  padding: 0.75rem 1.25rem;
+  white-space: nowrap;
+}
+
+/* Materials list */
+.materials-empty {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.25);
+  padding: 1rem 0;
+}
+
+.materials-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.material-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #1a1a1a;
+  border: 1px solid #242424;
+  border-radius: 10px;
+  transition: border-color 0.15s;
+}
+
+.material-item:hover {
+  border-color: #333;
+}
+
+.material-chip {
+  color: #ff6b35;
+  font-size: 0.9rem;
+}
+
+.material-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #e8e8e8;
+}
+
+.material-remove {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.2);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.material-remove:hover {
+  background: rgba(252,129,74,0.12);
+  color: #fc814a;
+}
+
+/* Phone input row */
+.settings-phone-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid #2a2a2a;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1e1e1e;
+  transition: border-color 0.2s;
+}
+
+.settings-phone-row:focus-within {
+  border-color: #ff6b35;
+}
+
+.phone-prefix {
+  padding: 0.75rem 0.75rem 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.3);
+  white-space: nowrap;
+  border-right: 1px solid #2a2a2a;
+  background: #181818;
+}
+
+.settings-input-phone {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  flex: 1;
+}
+
+.settings-input-phone:focus {
+  background: transparent;
+}
+
+.whatsapp-test-link {
+  display: inline-block;
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  color: #48bb78;
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.whatsapp-test-link:hover {
+  opacity: 1;
+}
+
 /* Responsivo */
 @media (max-width: 900px) {
   .admin-sidebar {
@@ -648,7 +835,8 @@
     margin-left: 0;
     padding: 1.25rem;
   }
-  .admin-layout {
+  .admin-layout,
+  .attributes-layout {
     grid-template-columns: 1fr;
   }
   .admin-form .form-row {

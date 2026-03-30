@@ -1,3 +1,4 @@
+import { getSetting, DEFAULT_WHATSAPP } from '../lib/settings'
 import './WhatsAppButton.css'
 
 const WHATSAPP_ICON = (
@@ -6,7 +7,8 @@ const WHATSAPP_ICON = (
   </svg>
 )
 
-export default function WhatsAppButton({ productName, phone = '999311574' }) {
+export default function WhatsAppButton({ productName }) {
+  const phone = getSetting('whatsapp', DEFAULT_WHATSAPP)
   const message = encodeURIComponent(
     `Hello! I'm interested in *${productName}*. Could you give me more information and help me complete my order?`
   )

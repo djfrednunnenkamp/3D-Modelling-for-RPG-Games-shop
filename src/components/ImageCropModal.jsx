@@ -3,7 +3,7 @@ import Cropper from 'react-easy-crop'
 import { getCroppedImg } from '../lib/cropUtils'
 import './ImageCropModal.css'
 
-export default function ImageCropModal({ imageSrc, onConfirm, onCancel }) {
+export default function ImageCropModal({ imageSrc, isReCrop, onConfirm, onCancel }) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
@@ -29,7 +29,7 @@ export default function ImageCropModal({ imageSrc, onConfirm, onCancel }) {
   return (
     <div className="crop-backdrop">
       <div className="crop-card">
-        <h3 className="crop-title">Crop Image</h3>
+        <h3 className="crop-title">{isReCrop ? 'Re-crop Image' : 'Crop Image'}</h3>
         <div className="crop-container">
           <Cropper
             image={imageSrc}
@@ -58,7 +58,7 @@ export default function ImageCropModal({ imageSrc, onConfirm, onCancel }) {
             Cancel
           </button>
           <button className="btn-save" onClick={handleConfirm} disabled={processing}>
-            {processing ? 'Processing...' : 'Crop & Upload'}
+            {processing ? 'Processing...' : isReCrop ? '✎ Re-crop & Upload' : 'Crop & Upload'}
           </button>
         </div>
       </div>
