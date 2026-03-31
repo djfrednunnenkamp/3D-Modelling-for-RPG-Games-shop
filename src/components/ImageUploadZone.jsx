@@ -37,11 +37,16 @@ function SortableImage({ url, index, onRemove, onReCrop }) {
   )
 }
 
-export default function ImageUploadZone({ images, onChange, uploading, onUploadingChange, showMessage }) {
+// images: string[] — URLs of original images in storage
+// crops: CropData[] — crop params per image, parallel array to images
+// CropData = { x, y, width, height, naturalWidth, naturalHeight, modalCrop, modalZoom }
+export default function ImageUploadZone({ images, crops = [], onChange, uploading, onUploadingChange, showMessage }) {
   const fileInputRef = useRef(null)
+  const originalFiles = useRef({}) // { [blobUrl]: File } — pending uploads only
+
   const [cropSrc, setCropSrc] = useState(null)
-  const [reCropUrl, setReCropUrl] = useState(null)   // URL being replaced (null = new upload)
-  const [originalSrcs, setOriginalSrcs] = useState({}) // { uploadedUrl: blobUrl | remoteUrl }
+  const [reCropUrl, setReCropUrl] = useState(null)
+  const [cropModalState, setCropModalState] = useState(null) // { crop, zoom } | null
   const [uploadProgress, setUploadProgress] = useState(0)
 
   const sensors = useSensors(useSensor(PointerSensor))
@@ -51,7 +56,7 @@ export default function ImageUploadZone({ images, onChange, uploading, onUploadi
     if (over && active.id !== over.id) {
       const oldIndex = images.indexOf(active.id)
       const newIndex = images.indexOf(over.id)
-      onChange(arrayMove(images, oldIndex, newIndex))
+      onChange(arrayMove(images, oldIndex, newIndex), arrayMove(crops, oldIndex, newIndex))
     }
   }
 
@@ -63,30 +68,59 @@ export default function ImageUploadZone({ images, onChange, uploading, onUploadi
       showMessage('Please select an image file only.', 'error')
       return
     }
+    const blobUrl = URL.createObjectURL(file)
+    originalFiles.current[blobUrl] = file
     setReCropUrl(null)
-    setCropSrc(URL.createObjectURL(file))
+    setCropModalState(null)
+    setCropSrc(blobUrl)
   }
 
   function handleReCrop(url) {
-    // Use stored original (blob or remote URL) if available, else use the URL directly
-    const src = originalSrcs[url] || url
+    const idx = images.indexOf(url)
+    const savedCrop = crops[idx]
     setReCropUrl(url)
-    setCropSrc(src)
+    // Restore previous crop position and zoom if available
+    setCropModalState(savedCrop
+      ? { crop: savedCrop.modalCrop, zoom: savedCrop.modalZoom }
+      : null
+    )
+    // Load original directly from storage — no re-upload needed
+    setCropSrc(url)
   }
 
-  async function handleCropConfirm(croppedFile) {
-    const isReCrop = reCropUrl !== null
-    const srcWasBlob = cropSrc?.startsWith('blob:')
-    const isSavedBlob = isReCrop && originalSrcs[reCropUrl]?.startsWith('blob:')
-
-    // Only revoke if this is a fresh blob that we won't keep
-    // (fresh new upload blobs are kept in originalSrcs — don't revoke)
-    if (!isReCrop && !srcWasBlob) {
-      URL.revokeObjectURL(cropSrc)
+  async function handleCropConfirm(croppedAreaPixels, naturalSize, cropState) {
+    const cropData = {
+      x: croppedAreaPixels.x,
+      y: croppedAreaPixels.y,
+      width: croppedAreaPixels.width,
+      height: croppedAreaPixels.height,
+      naturalWidth: naturalSize.naturalWidth,
+      naturalHeight: naturalSize.naturalHeight,
+      modalCrop: cropState.crop,
+      modalZoom: cropState.zoom,
     }
 
-    const currentCropSrc = cropSrc
+    const isReCrop = reCropUrl !== null
+
+    if (isReCrop) {
+      // Re-crop: just update crop params, no upload needed
+      const idx = images.indexOf(reCropUrl)
+      const newCrops = [...crops]
+      newCrops[idx] = cropData
+      onChange(images, newCrops)
+      showMessage('Crop updated!')
+      setCropSrc(null)
+      setCropModalState(null)
+      setReCropUrl(null)
+      return
+    }
+
+    // New image: upload the original file
+    const currentBlobUrl = cropSrc
+    const file = originalFiles.current[currentBlobUrl]
+
     setCropSrc(null)
+    setCropModalState(null)
     onUploadingChange(true)
     setUploadProgress(0)
 
@@ -98,27 +132,15 @@ export default function ImageUploadZone({ images, onChange, uploading, onUploadi
     }, 200)
 
     try {
-      const newUrl = await uploadProductImage(croppedFile)
+      const newUrl = await uploadProductImage(file)
       clearInterval(interval)
       setUploadProgress(100)
 
-      if (isReCrop) {
-        // Replace old URL with new one
-        onChange(images.map(u => u === reCropUrl ? newUrl : u))
-        // Transfer original source to new URL key
-        setOriginalSrcs(prev => {
-          const orig = prev[reCropUrl] || reCropUrl
-          const { [reCropUrl]: _, ...rest } = prev
-          return { ...rest, [newUrl]: orig }
-        })
-        showMessage('Image updated!')
-      } else {
-        // New upload — keep the blob URL as original for future re-crop
-        onChange([...images, newUrl])
-        setOriginalSrcs(prev => ({ ...prev, [newUrl]: currentCropSrc }))
-        showMessage('Image uploaded!')
-      }
+      URL.revokeObjectURL(currentBlobUrl)
+      delete originalFiles.current[currentBlobUrl]
 
+      onChange([...images, newUrl], [...crops, cropData])
+      showMessage('Image uploaded!')
       setTimeout(() => setUploadProgress(0), 800)
     } catch (err) {
       clearInterval(interval)
@@ -131,21 +153,21 @@ export default function ImageUploadZone({ images, onChange, uploading, onUploadi
   }
 
   function handleCropCancel() {
-    const isReCrop = reCropUrl !== null
-    // Only revoke if it's a freshly created blob (new upload that was cancelled)
-    if (!isReCrop && cropSrc?.startsWith('blob:')) {
+    if (cropSrc?.startsWith('blob:')) {
       URL.revokeObjectURL(cropSrc)
+      delete originalFiles.current[cropSrc]
     }
     setCropSrc(null)
+    setCropModalState(null)
     setReCropUrl(null)
   }
 
   function handleRemove(url) {
-    // Revoke blob URL if stored
-    const orig = originalSrcs[url]
-    if (orig?.startsWith('blob:')) URL.revokeObjectURL(orig)
-    setOriginalSrcs(prev => { const { [url]: _, ...rest } = prev; return rest })
-    onChange(images.filter(u => u !== url))
+    const idx = images.indexOf(url)
+    onChange(
+      images.filter((_, i) => i !== idx),
+      crops.filter((_, i) => i !== idx),
+    )
   }
 
   return (
@@ -199,6 +221,8 @@ export default function ImageUploadZone({ images, onChange, uploading, onUploadi
         <ImageCropModal
           imageSrc={cropSrc}
           isReCrop={reCropUrl !== null}
+          initialCrop={cropModalState?.crop ?? undefined}
+          initialZoom={cropModalState?.zoom ?? undefined}
           onConfirm={handleCropConfirm}
           onCancel={handleCropCancel}
         />

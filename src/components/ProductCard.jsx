@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import CroppedImage from './CroppedImage'
 import './ProductCard.css'
 
 export default function ProductCard({ product }) {
@@ -9,10 +10,19 @@ export default function ProductCard({ product }) {
     currency: 'BRL',
   })
 
+  const src = product.image_urls?.[0] || product.image_url || '/placeholder.svg'
+  const crop = product.image_crops?.[0] ?? null
+
   return (
     <div className="product-card" onClick={() => navigate(`/produto/${product.id}`)}>
       <div className="card-image-wrapper">
-        <img src={product.image_urls?.[0] || product.image_url || '/placeholder.svg'} alt={product.name} className="card-image" onError={e => { e.currentTarget.src = '/placeholder.svg' }} />
+        <CroppedImage
+          src={src}
+          crop={crop}
+          alt={product.name}
+          containerHeight={200}
+          onError={e => { e.currentTarget.src = '/placeholder.svg' }}
+        />
         {product.category && <span className="card-category">{product.category}</span>}
       </div>
       <div className="card-body">

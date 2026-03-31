@@ -24,6 +24,7 @@ const EMPTY_FORM = {
   price: '',
   image_url: '',
   image_urls: [],
+  image_crops: [],
   category: '',
   material: '',
   painted: false,
@@ -85,6 +86,7 @@ export default function Admin() {
       price: product.price || '',
       image_url: product.image_url || '',
       image_urls: product.image_urls || [],
+      image_crops: product.image_crops || [],
       category: product.category || '',
       material: product.material || '',
       painted: product.painted ?? false,
@@ -339,7 +341,8 @@ export default function Admin() {
                   <label>Photos {form.image_urls.length > 0 && `(${form.image_urls.length})`}</label>
                   <ImageUploadZone
                     images={form.image_urls}
-                    onChange={urls => setForm(f => ({ ...f, image_urls: urls }))}
+                    crops={form.image_crops}
+                    onChange={(urls, crops) => setForm(f => ({ ...f, image_urls: urls, image_crops: crops }))}
                     uploading={uploading}
                     onUploadingChange={setUploading}
                     showMessage={showMessage}
