@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import WhatsAppButton from '../components/WhatsAppButton'
+import CroppedImage from '../components/CroppedImage'
 import { getProductById } from '../lib/supabase'
 import './ProductDetail.css'
 
@@ -53,6 +54,7 @@ export default function ProductDetail() {
       ? [product.image_url]
       : ['/placeholder.svg']
 
+  const crops = product.image_crops ?? []
   const hasRealImage = product.image_urls?.length > 0 || !!product.image_url
 
   function prev() {
@@ -83,11 +85,12 @@ export default function ProductDetail() {
               <span className="zoom-hint">🔍 Hover to zoom</span>
             )}
 
-            <img
+            <CroppedImage
               src={images[selectedIdx]}
+              crop={crops[selectedIdx] ?? null}
               alt={product.name}
               className="detail-image"
-              style={hasRealImage && zoomed ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
+              style={hasRealImage && zoomed ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : undefined}
               onError={e => { e.currentTarget.src = '/placeholder.svg' }}
             />
 
@@ -111,7 +114,12 @@ export default function ProductDetail() {
                   className={`detail-thumb-btn ${i === selectedIdx ? 'active' : ''}`}
                   onClick={() => setSelectedIdx(i)}
                 >
-                  <img src={url} alt={`${product.name} ${i + 1}`} />
+                  <CroppedImage
+                    src={url}
+                    crop={crops[i] ?? null}
+                    alt={`${product.name} ${i + 1}`}
+                    containerHeight={64}
+                  />
                 </button>
               ))}
             </div>

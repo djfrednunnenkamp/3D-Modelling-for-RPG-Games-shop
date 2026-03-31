@@ -1,17 +1,18 @@
 import { useRef, useState, useLayoutEffect } from 'react'
 
 // crop = { x, y, width, height, naturalWidth, naturalHeight } in natural image pixels
-// Applies the crop to display exactly the cropped region, scaled to fill the container
-// like object-fit: cover but on the crop area, not the full original.
-export default function CroppedImage({ src, crop, alt, containerHeight = 200, onError }) {
+// containerHeight — fixed px height (cards). Omit to use aspect-ratio from the crop (detail page).
+// className / style — forwarded to the outer container div (for CSS transitions, transforms, etc.)
+export default function CroppedImage({ src, crop, alt, containerHeight, className, style, onError }) {
   const ref = useRef(null)
-  const [w, setW] = useState(0)
+  const [size, setSize] = useState({ w: 0, h: 0 })
 
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    setW(el.offsetWidth)
-    const ro = new ResizeObserver(([entry]) => setW(entry.contentRect.width))
+    const measure = () => setSize({ w: el.offsetWidth, h: el.offsetHeight })
+    measure()
+    const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -19,9 +20,19 @@ export default function CroppedImage({ src, crop, alt, containerHeight = 200, on
   const hasValidCrop =
     crop && crop.width && crop.height && crop.naturalWidth && crop.naturalHeight
 
-  if (!hasValidCrop || !w) {
+  // Container style: fixed height for cards, aspect-ratio for detail page
+  const aspectRatio = hasValidCrop ? `${crop.width}/${crop.height}` : '4/3'
+  const baseStyle = containerHeight != null
+    ? { width: '100%', height: containerHeight, overflow: 'hidden', position: 'relative' }
+    : { width: '100%', aspectRatio, overflow: 'hidden', position: 'relative' }
+  const containerStyle = { ...baseStyle, ...style }
+
+  const W = size.w
+  const H = containerHeight ?? size.h
+
+  if (!hasValidCrop || !W || !H) {
     return (
-      <div ref={ref} style={{ width: '100%', height: containerHeight, overflow: 'hidden' }}>
+      <div ref={ref} className={className} style={containerStyle}>
         <img
           src={src}
           alt={alt}
@@ -33,15 +44,14 @@ export default function CroppedImage({ src, crop, alt, containerHeight = 200, on
   }
 
   const { x, y, width, height, naturalWidth, naturalHeight } = crop
-  const H = containerHeight
-  const scale = Math.max(w / width, H / height)
+  const scale = Math.max(W / width, H / height)
   const imgW = Math.round(naturalWidth * scale)
   const imgH = Math.round(naturalHeight * scale)
-  const left = Math.round(-(x * scale) + (w - width * scale) / 2)
+  const left = Math.round(-(x * scale) + (W - width * scale) / 2)
   const top = Math.round(-(y * scale) + (H - height * scale) / 2)
 
   return (
-    <div ref={ref} style={{ width: '100%', height: H, overflow: 'hidden', position: 'relative' }}>
+    <div ref={ref} className={className} style={containerStyle}>
       <img
         src={src}
         alt={alt}
