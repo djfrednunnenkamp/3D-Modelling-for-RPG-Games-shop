@@ -26,6 +26,7 @@
   height: 44px;
   object-fit: contain;
   flex-shrink: 0;
+  margin-right: 0.85rem;
 }
 
 .navbar-links {
