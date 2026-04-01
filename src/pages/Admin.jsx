@@ -45,6 +45,8 @@ export default function Admin() {
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [descModalOpen, setDescModalOpen] = useState(false)
+  const [catModalOpen, setCatModalOpen] = useState(false)
+  const [catSearch, setCatSearch] = useState('')
 
   // Materials
   const [materials, setMaterials] = useState(() => getSetting('materials', DEFAULT_MATERIALS))
@@ -269,27 +271,31 @@ export default function Admin() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Categories</label>
+                    <div className="desc-label-row">
+                      <label>Categories</label>
+                      {categories.length > 0 && (
+                        <button
+                          type="button"
+                          className="desc-expand-btn"
+                          onClick={() => { setCatSearch(''); setCatModalOpen(true) }}
+                        >
+                          ⤢ Select
+                        </button>
+                      )}
+                    </div>
                     {categories.length === 0 ? (
                       <p className="no-categories-hint">Add categories in the Attributes tab first.</p>
                     ) : (
-                      <div className="category-chips">
-                        {categories.map(c => (
-                          <button
-                            key={c}
-                            type="button"
-                            className={`category-chip ${form.categories.includes(c) ? 'selected' : ''}`}
-                            onClick={() => setForm(f => ({
-                              ...f,
-                              categories: f.categories.includes(c)
-                                ? f.categories.filter(x => x !== c)
-                                : [...f.categories, c],
-                            }))}
-                          >
-                            {c}
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        type="button"
+                        className="cat-selector-btn"
+                        onClick={() => { setCatSearch(''); setCatModalOpen(true) }}
+                      >
+                        {form.categories.length === 0
+                          ? <span className="cat-selector-placeholder">None selected</span>
+                          : form.categories.join(', ')
+                        }
+                      </button>
                     )}
                   </div>
                 </div>
@@ -552,6 +558,59 @@ export default function Admin() {
           </div>
         )}
       </main>
+
+      {/* ── Category selector modal ── */}
+      {catModalOpen && (
+        <div className="desc-modal-backdrop" onClick={() => setCatModalOpen(false)}>
+          <div className="desc-modal cat-modal" onClick={e => e.stopPropagation()}>
+            <div className="desc-modal-header">
+              <h3>Categories</h3>
+              <button type="button" className="desc-modal-close" onClick={() => setCatModalOpen(false)}>✕</button>
+            </div>
+            <div className="cat-modal-search-row">
+              <input
+                className="cat-modal-search"
+                type="text"
+                placeholder="Search categories..."
+                value={catSearch}
+                onChange={e => setCatSearch(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="cat-modal-list">
+              {categories
+                .filter(c => c.toLowerCase().includes(catSearch.toLowerCase()))
+                .map(c => {
+                  const selected = form.categories.includes(c)
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`cat-modal-item ${selected ? 'selected' : ''}`}
+                      onClick={() => setForm(f => ({
+                        ...f,
+                        categories: selected
+                          ? f.categories.filter(x => x !== c)
+                          : [...f.categories, c],
+                      }))}
+                    >
+                      <span className="cat-modal-check">{selected ? '✓' : ''}</span>
+                      {c}
+                    </button>
+                  )
+                })}
+              {categories.filter(c => c.toLowerCase().includes(catSearch.toLowerCase())).length === 0 && (
+                <p className="cat-modal-empty">No categories match.</p>
+              )}
+            </div>
+            <div className="desc-modal-footer">
+              <button type="button" className="btn-save" onClick={() => setCatModalOpen(false)}>
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Description full-screen editor modal ── */}
       {descModalOpen && (
