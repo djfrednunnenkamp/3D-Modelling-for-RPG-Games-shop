@@ -74,6 +74,28 @@
   font-size: 1rem;
 }
 
+.sidebar-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.75rem;
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.3);
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-back:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+}
+
 .sidebar-logout {
   display: flex;
   align-items: center;

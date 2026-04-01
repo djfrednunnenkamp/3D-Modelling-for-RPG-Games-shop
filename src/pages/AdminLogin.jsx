@@ -65,6 +65,10 @@ export default function AdminLogin() {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        <button className="login-back-btn" onClick={() => navigate('/')}>
+          ← Back to site
+        </button>
       </div>
     </div>
   )

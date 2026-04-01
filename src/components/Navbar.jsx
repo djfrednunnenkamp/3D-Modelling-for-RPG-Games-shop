@@ -1,8 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../lib/auth'
 import './Navbar.css'
 
 export default function Navbar() {
   const { pathname } = useLocation()
+  const { user } = useAuth()
 
   return (
     <nav className="navbar">
@@ -18,9 +20,16 @@ export default function Navbar() {
           Catalog
         </Link>
       </div>
-      <Link to="/personalizado" className={`nav-custom ${pathname === '/personalizado' ? 'active' : ''}`}>
-        ✦ Custom Order
-      </Link>
+      <div className="navbar-right">
+        <Link to="/personalizado" className={`nav-custom ${pathname === '/personalizado' ? 'active' : ''}`}>
+          ✦ Custom Order
+        </Link>
+        {user && (
+          <Link to="/admin" className="nav-admin">
+            Admin
+          </Link>
+        )}
+      </div>
     </nav>
   )
 }

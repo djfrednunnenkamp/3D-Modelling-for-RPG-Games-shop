@@ -233,6 +233,9 @@ export default function Admin() {
             <span className="nav-icon">⚙</span> Settings
           </button>
         </nav>
+        <button className="sidebar-back" onClick={() => navigate('/')}>
+          <span>←</span> Back to site
+        </button>
         <button className="sidebar-logout" onClick={handleLogout}>
           <span>⎋</span> Sign out
         </button>

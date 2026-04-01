@@ -24,11 +24,6 @@ export default function ProductCard({ product }) {
           containerHeight={200}
           onError={e => { e.currentTarget.src = '/placeholder.svg' }}
         />
-        {cats.length > 0 && (
-          <div className="card-categories">
-            {cats.map(c => <span key={c} className="card-category">{c}</span>)}
-          </div>
-        )}
       </div>
       <div className="card-body">
         <h3 className="card-name">{product.name}</h3>
