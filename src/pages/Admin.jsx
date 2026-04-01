@@ -25,7 +25,7 @@ const EMPTY_FORM = {
   image_url: '',
   image_urls: [],
   image_crops: [],
-  category: '',
+  categories: [],
   material: '',
   painted: false,
 }
@@ -88,7 +88,7 @@ export default function Admin() {
       image_url: product.image_url || '',
       image_urls: product.image_urls || [],
       image_crops: product.image_crops || [],
-      category: product.category || '',
+      categories: product.categories ?? (product.category ? [product.category] : []),
       material: product.material || '',
       painted: product.painted ?? false,
     })
@@ -269,16 +269,28 @@ export default function Admin() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Category</label>
-                    <select
-                      value={form.category}
-                      onChange={e => setForm({ ...form, category: e.target.value })}
-                    >
-                      <option value="">Select...</option>
-                      {categories.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                    <label>Categories</label>
+                    {categories.length === 0 ? (
+                      <p className="no-categories-hint">Add categories in the Attributes tab first.</p>
+                    ) : (
+                      <div className="category-chips">
+                        {categories.map(c => (
+                          <button
+                            key={c}
+                            type="button"
+                            className={`category-chip ${form.categories.includes(c) ? 'selected' : ''}`}
+                            onClick={() => setForm(f => ({
+                              ...f,
+                              categories: f.categories.includes(c)
+                                ? f.categories.filter(x => x !== c)
+                                : [...f.categories, c],
+                            }))}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

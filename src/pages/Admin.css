@@ -844,6 +844,44 @@
   }
 }
 
+/* ── Category multi-chips ── */
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.category-chip {
+  background: #1e1e1e;
+  border: 1px solid #444;
+  color: #aaa;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.category-chip:hover {
+  border-color: #f97316;
+  color: #f97316;
+}
+
+.category-chip.selected {
+  background: #f97316;
+  border-color: #f97316;
+  color: #111;
+}
+
+.no-categories-hint {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0.25rem 0 0;
+}
+
 /* ── Description label row ── */
 .desc-label-row {
   display: flex;

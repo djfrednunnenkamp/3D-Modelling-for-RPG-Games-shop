@@ -12,6 +12,7 @@ export default function ProductCard({ product }) {
 
   const src = product.image_urls?.[0] || product.image_url || '/placeholder.svg'
   const crop = product.image_crops?.[0] ?? null
+  const cats = product.categories?.length > 0 ? product.categories : (product.category ? [product.category] : [])
 
   return (
     <div className="product-card" onClick={() => navigate(`/produto/${product.id}`)}>
@@ -23,7 +24,11 @@ export default function ProductCard({ product }) {
           containerHeight={200}
           onError={e => { e.currentTarget.src = '/placeholder.svg' }}
         />
-        {product.category && <span className="card-category">{product.category}</span>}
+        {cats.length > 0 && (
+          <div className="card-categories">
+            {cats.map(c => <span key={c} className="card-category">{c}</span>)}
+          </div>
+        )}
       </div>
       <div className="card-body">
         <h3 className="card-name">{product.name}</h3>

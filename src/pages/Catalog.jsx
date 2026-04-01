@@ -14,8 +14,10 @@ export default function Catalog() {
       .finally(() => setLoading(false))
   }, [])
 
-  const categories = ['All', ...new Set(products.map((p) => p.category).filter(Boolean))]
-  const filtered = filter === 'All' ? products : products.filter((p) => p.category === filter)
+  // Support both old single `category` and new `categories` array
+  const getProductCategories = (p) => p.categories?.length > 0 ? p.categories : (p.category ? [p.category] : [])
+  const categories = ['All', ...new Set(products.flatMap(getProductCategories))]
+  const filtered = filter === 'All' ? products : products.filter(p => getProductCategories(p).includes(filter))
 
   return (
     <div className="catalog">

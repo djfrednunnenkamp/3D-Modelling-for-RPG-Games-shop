@@ -131,6 +131,9 @@ export default function ProductDetail() {
           <p className="detail-price">{formattedPrice}</p>
 
           <div className="detail-badges">
+            {(product.categories?.length > 0 ? product.categories : (product.category ? [product.category] : [])).map(c => (
+              <span key={c} className="detail-badge badge-category">{c}</span>
+            ))}
             {product.material && (
               <span className="detail-badge badge-material">⬡ {product.material}</span>
             )}
