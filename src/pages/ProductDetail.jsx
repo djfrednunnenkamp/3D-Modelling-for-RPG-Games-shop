@@ -143,15 +143,11 @@ export default function ProductDetail() {
 
           <div className="detail-divider" />
 
-          <p className="detail-description">{product.description}</p>
+          <WhatsAppButton productName={product.name} />
 
           <div className="detail-divider" />
 
-          <WhatsAppButton productName={product.name} />
-
-          <p className="detail-hint">
-            Click the button above to contact us via WhatsApp and complete your order.
-          </p>
+          <p className="detail-description">{product.description}</p>
         </div>
       </div>
     </div>
