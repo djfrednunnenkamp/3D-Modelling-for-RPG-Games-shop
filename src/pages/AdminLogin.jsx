@@ -29,8 +29,8 @@ export default function AdminLogin() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          <div className="login-logo-icon">⬡</div>
-          <span>Peças 3D</span>
+          <img src="/favicon.png" alt="Dungeon Prints" className="login-logo-img" />
+          <span>Dungeon Prints</span>
         </div>
 
         <h1>Welcome back</h1>

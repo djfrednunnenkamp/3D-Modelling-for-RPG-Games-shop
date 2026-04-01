@@ -210,8 +210,8 @@ export default function Admin() {
       {/* Sidebar */}
       <aside className="admin-sidebar">
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">⬡</div>
-          <span>Peças 3D</span>
+          <img src="/favicon.png" alt="Dungeon Prints" className="sidebar-logo-img" />
+          <span>Dungeon Prints</span>
         </div>
         <nav className="sidebar-nav">
           <button
