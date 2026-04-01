@@ -7,7 +7,8 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <Link to="/" className="navbar-brand">
-        <span className="brand-accent">&#9632;</span> Dungeon Prints
+        <img src="/favicon.png" alt="Dungeon Prints" className="navbar-logo" />
+        <span className="brand-accent"></span> Dungeon Prints
       </Link>
       <div className="navbar-links">
         <Link to="/" className={pathname === '/' ? 'active' : ''}>
