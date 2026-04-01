@@ -44,6 +44,7 @@ export default function Admin() {
   const [editingId, setEditingId] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [descModalOpen, setDescModalOpen] = useState(false)
 
   // Materials
   const [materials, setMaterials] = useState(() => getSetting('materials', DEFAULT_MATERIALS))
@@ -282,7 +283,17 @@ export default function Admin() {
                 </div>
 
                 <div className="form-group">
-                  <label>Description</label>
+                  <div className="desc-label-row">
+                    <label>Description</label>
+                    <button
+                      type="button"
+                      className="desc-expand-btn"
+                      onClick={() => setDescModalOpen(true)}
+                      title="Open full editor"
+                    >
+                      ⤢ Expand
+                    </button>
+                  </div>
                   <textarea
                     value={form.description}
                     onChange={e => setForm({ ...form, description: e.target.value })}
@@ -529,6 +540,30 @@ export default function Admin() {
           </div>
         )}
       </main>
+
+      {/* ── Description full-screen editor modal ── */}
+      {descModalOpen && (
+        <div className="desc-modal-backdrop" onClick={() => setDescModalOpen(false)}>
+          <div className="desc-modal" onClick={e => e.stopPropagation()}>
+            <div className="desc-modal-header">
+              <h3>Description</h3>
+              <button type="button" className="desc-modal-close" onClick={() => setDescModalOpen(false)}>✕</button>
+            </div>
+            <textarea
+              className="desc-modal-textarea"
+              value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              placeholder="Describe the piece in detail..."
+              autoFocus
+            />
+            <div className="desc-modal-footer">
+              <button type="button" className="btn-save" onClick={() => setDescModalOpen(false)}>
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
