@@ -7,6 +7,8 @@ import {
   updateProduct,
   deleteProduct,
   deleteProductImages,
+  getSettings,
+  saveSetting,
 } from '../lib/supabase'
 import {
   getSetting,
@@ -63,7 +65,10 @@ export default function Admin() {
   // Toast
   const [message, setMessage] = useState(null)
 
-  useEffect(() => { loadProducts() }, [])
+  useEffect(() => {
+    loadProducts()
+    loadSettings()
+  }, [])
 
   async function loadProducts() {
     setLoading(true)
@@ -73,6 +78,25 @@ export default function Admin() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function loadSettings() {
+    try {
+      const data = await getSettings()
+      if (!data) return
+      if (data.materials) {
+        setMaterials(data.materials)
+        setSetting('materials', data.materials)
+      }
+      if (data.categories) {
+        setCategories(data.categories)
+        setSetting('categories', data.categories)
+      }
+      if (data.whatsapp !== undefined) {
+        setWhatsapp(data.whatsapp)
+        setSetting('whatsapp', data.whatsapp)
+      }
+    } catch {}
   }
 
   function showMessage(text, type = 'success') {
@@ -150,6 +174,7 @@ export default function Admin() {
     const updated = [...materials, name]
     setMaterials(updated)
     setSetting('materials', updated)
+    saveSetting('materials', updated)
     setNewMaterial('')
     showMessage(`"${name}" added!`)
   }
@@ -158,6 +183,7 @@ export default function Admin() {
     const updated = materials.filter(m => m !== mat)
     setMaterials(updated)
     setSetting('materials', updated)
+    saveSetting('materials', updated)
   }
 
   // ── Categories ────────────────────────────────────────────
@@ -171,6 +197,7 @@ export default function Admin() {
     const updated = [...categories, name]
     setCategories(updated)
     setSetting('categories', updated)
+    saveSetting('categories', updated)
     setNewCategory('')
     showMessage(`"${name}" added!`)
   }
@@ -179,11 +206,14 @@ export default function Admin() {
     const updated = categories.filter(c => c !== cat)
     setCategories(updated)
     setSetting('categories', updated)
+    saveSetting('categories', updated)
   }
 
   // ── Settings ──────────────────────────────────────────────
   function saveWhatsapp() {
-    setSetting('whatsapp', whatsapp.trim())
+    const val = whatsapp.trim()
+    setSetting('whatsapp', val)
+    saveSetting('whatsapp', val)
     setWhatsappSaved(true)
     setTimeout(() => setWhatsappSaved(false), 2500)
   }
@@ -274,18 +304,7 @@ export default function Admin() {
                     />
                   </div>
                   <div className="form-group">
-                    <div className="desc-label-row">
-                      <label>Categories</label>
-                      {categories.length > 0 && (
-                        <button
-                          type="button"
-                          className="desc-expand-btn"
-                          onClick={() => { setCatSearch(''); setCatModalOpen(true) }}
-                        >
-                          ⤢ Select
-                        </button>
-                      )}
-                    </div>
+                    <label>Categories</label>
                     {categories.length === 0 ? (
                       <p className="no-categories-hint">Add categories in the Attributes tab first.</p>
                     ) : (
@@ -295,7 +314,7 @@ export default function Admin() {
                         onClick={() => { setCatSearch(''); setCatModalOpen(true) }}
                       >
                         {form.categories.length === 0
-                          ? <span className="cat-selector-placeholder">None selected</span>
+                          ? <span className="cat-selector-placeholder">Select categories</span>
                           : form.categories.join(', ')
                         }
                       </button>

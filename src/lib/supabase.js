@@ -59,3 +59,17 @@ export async function uploadProductImage(file) {
   const { data } = supabase.storage.from('produtos').getPublicUrl(filename)
   return data.publicUrl
 }
+
+// ── Settings ──────────────────────────────────────────────
+export async function getSettings() {
+  if (USE_MOCK) return null
+  const { data, error } = await supabase.from('settings').select('*')
+  if (error) throw error
+  return Object.fromEntries(data.map(r => [r.key, r.value]))
+}
+
+export async function saveSetting(key, value) {
+  if (USE_MOCK) return
+  const { error } = await supabase.from('settings').upsert({ key, value })
+  if (error) throw error
+}
