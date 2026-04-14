@@ -14,7 +14,16 @@
 
 .card-image-wrapper {
   position: relative;
+  height: 200px;
+  overflow: hidden;
 }
+
+.card-stl-fallback {
+  width: 100%;
+  height: 200px;
+  background: #141414;
+}
+
 
 .card-image {
   width: 100%;

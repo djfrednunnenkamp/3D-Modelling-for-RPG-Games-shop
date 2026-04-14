@@ -122,7 +122,11 @@
   flex: 1;
   margin-left: 220px;
   padding: 2rem;
-  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .admin-topbar {
@@ -176,7 +180,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  align-items: start;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* Card do formulário */
@@ -186,6 +192,22 @@
   border: 1px solid #222;
   border-radius: 16px;
   padding: 1.75rem;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.admin-form-card::-webkit-scrollbar,
+.admin-products-card::-webkit-scrollbar {
+  width: 4px;
+}
+.admin-form-card::-webkit-scrollbar-track,
+.admin-products-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-form-card::-webkit-scrollbar-thumb,
+.admin-products-card::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 2px;
 }
 
 /* Formulário */
@@ -471,8 +493,8 @@
 /* Lista de produtos */
 .products-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
 }
 
@@ -480,6 +502,26 @@
   font-size: 1rem;
   font-weight: 700;
   color: white;
+}
+
+.products-search {
+  width: 100%;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  color: #e8e8e8;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.products-search::placeholder {
+  color: #555;
+}
+
+.products-search:focus {
+  border-color: #f97316;
 }
 
 .products-loading,
@@ -670,6 +712,15 @@
   max-width: 540px;
 }
 
+/* Tabs que não são o layout de produtos usam scroll próprio */
+.attributes-layout,
+.settings-layout {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding-right: 0.25rem;
+}
+
 /* Attributes layout — 2 colunas */
 .attributes-layout {
   display: grid;
@@ -843,19 +894,87 @@
   opacity: 1;
 }
 
+/* Mobile tab bar — hidden on desktop */
+.admin-mobile-tabs {
+  display: none;
+}
+
 /* Responsivo */
 @media (max-width: 900px) {
   .admin-sidebar {
     display: none;
   }
+
+  .admin-mobile-tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 0;
+    background: #111;
+    border-bottom: 1px solid #222;
+    margin: -1.25rem -1.25rem 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .admin-mobile-tabs::-webkit-scrollbar { display: none; }
+
+  .admin-mobile-tab {
+    background: none;
+    border: none;
+    color: #777;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .admin-mobile-tab:hover {
+    color: #ccc;
+  }
+
+  .admin-mobile-tab.active {
+    color: #f97316;
+    border-bottom-color: #f97316;
+  }
+
   .admin-main {
     margin-left: 0;
     padding: 1.25rem;
+    height: auto;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
   }
-  .admin-layout,
+
+  .admin-layout {
+    grid-template-columns: 1fr;
+    overflow: visible;
+    flex: none;
+    min-height: unset;
+  }
+
+  .admin-form-card,
+  .admin-products-card {
+    overflow-y: visible;
+    min-height: unset;
+  }
+
   .attributes-layout {
     grid-template-columns: 1fr;
+    overflow: visible;
+    flex: none;
   }
+
+  .settings-layout {
+    overflow: visible;
+    flex: none;
+  }
+
   .admin-form .form-row {
     grid-template-columns: 1fr;
   }
@@ -1115,3 +1234,181 @@
   display: flex;
   justify-content: flex-end;
 }
+
+/* ── STL Upload ─────────────────────────────────────────── */
+.stl-upload-zone {
+  border: 2px dashed #333;
+  border-radius: 4px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  transition: border-color 0.2s;
+}
+
+.stl-upload-zone:hover {
+  border-color: #f97316;
+}
+
+.stl-upload-icon {
+  font-size: 1.8rem;
+  color: #555;
+}
+
+.stl-upload-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.stl-upload-sub {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.stl-uploading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.stl-spinner-sm {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #333;
+  border-top-color: #f97316;
+  border-radius: 50%;
+  animation: stl-spin 0.8s linear infinite;
+}
+
+@keyframes stl-spin {
+  to { transform: rotate(360deg); }
+}
+
+.stl-upload-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Clickable preview */
+.stl-preview-viewer {
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stl-preview-clickable {
+  position: relative;
+  cursor: pointer;
+}
+
+.stl-preview-clickable:hover .stl-preview-overlay {
+  opacity: 1;
+}
+
+.stl-preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity 0.18s;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.stl-preview-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stl-preview-btns {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.btn-download-stl {
+  background: none;
+  border: 1px solid #3a3a3a;
+  color: #aaa;
+  border-radius: 3px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.btn-download-stl:hover {
+  border-color: #63b3ed;
+  color: #63b3ed;
+}
+
+.stl-angle-saved {
+  font-size: 0.78rem;
+  color: #68d391;
+  font-weight: 600;
+}
+
+.stl-angle-pending {
+  font-size: 0.78rem;
+  color: #f6ad55;
+}
+
+.btn-remove-stl {
+  background: none;
+  border: 1px solid #3a3a3a;
+  color: #888;
+  border-radius: 3px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-remove-stl:hover {
+  border-color: #e53e3e;
+  color: #e53e3e;
+}
+
+/* STL angle picker modal */
+.stl-angle-modal {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  width: min(600px, 95vw);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stl-modal-hint {
+  margin: 0;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.8rem;
+  color: #888;
+  background: #111;
+  border-bottom: 1px solid #2a2a2a;
+  line-height: 1.5;
+}
+
+.stl-modal-viewer {
+  flex: 1;
+}
+

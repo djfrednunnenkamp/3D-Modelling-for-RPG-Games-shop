@@ -227,6 +227,60 @@
   display: block;
 }
 
+/* 3D View tabs */
+.detail-view-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.detail-view-tab {
+  flex: 1;
+  background: #1a1a1a;
+  border: none;
+  color: #777;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.detail-view-tab + .detail-view-tab {
+  border-left: 1px solid #2a2a2a;
+}
+
+.detail-view-tab:hover {
+  color: #ccc;
+  background: #222;
+}
+
+.detail-view-tab.active {
+  background: #f97316;
+  color: #111;
+}
+
+/* STL viewer container */
+.detail-stl-viewer {
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.detail-stl-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 420px;
+  background: #141414;
+  color: #555;
+  font-size: 0.85rem;
+}
+
 @media (max-width: 768px) {
   .detail {
     padding: 2rem 1.5rem;

@@ -32,12 +32,13 @@ export async function updateProduct(id, product) {
   if (error) throw error
 }
 
-export async function deleteProduct(id, imageUrl, imageUrls = []) {
+export async function deleteProduct(id, imageUrl, imageUrls = [], stlUrl = null) {
   const { error } = await supabase.from('products').delete().eq('id', id)
   if (error) throw error
 
   const allUrls = [...new Set([imageUrl, ...imageUrls].filter(Boolean))]
   await deleteProductImages(allUrls)
+  if (stlUrl) await deleteSTLFile(stlUrl)
 }
 
 export async function deleteProductImages(urls = []) {
@@ -58,6 +59,25 @@ export async function uploadProductImage(file) {
   if (error) throw error
   const { data } = supabase.storage.from('produtos').getPublicUrl(filename)
   return data.publicUrl
+}
+
+export async function uploadSTLFile(file) {
+  const filename = `stl/${Date.now()}.stl`
+  const { error } = await supabase.storage.from('produtos').upload(filename, file, {
+    upsert: true,
+    contentType: 'application/octet-stream',
+  })
+  if (error) throw error
+  const { data } = supabase.storage.from('produtos').getPublicUrl(filename)
+  return data.publicUrl
+}
+
+export async function deleteSTLFile(url) {
+  if (!supabase || !url) return
+  const match = url.match(/\/storage\/v1\/object\/public\/produtos\/(.+)/)
+  if (match) {
+    await supabase.storage.from('produtos').remove([match[1]])
+  }
 }
 
 // ── Settings ──────────────────────────────────────────────

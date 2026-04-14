@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import {
@@ -7,6 +7,8 @@ import {
   updateProduct,
   deleteProduct,
   deleteProductImages,
+  deleteSTLFile,
+  uploadSTLFile,
   getSettings,
   saveSetting,
 } from '../lib/supabase'
@@ -20,6 +22,8 @@ import {
 import ImageUploadZone from '../components/ImageUploadZone'
 import './Admin.css'
 
+const STLViewer = lazy(() => import('../components/STLViewer'))
+
 const EMPTY_FORM = {
   name: '',
   description: '',
@@ -30,6 +34,9 @@ const EMPTY_FORM = {
   categories: [],
   material: '',
   painted: false,
+  stl_url: '',
+  stl_camera_angle: null,
+  stl_as_cover: true,
 }
 
 export default function Admin() {
@@ -45,10 +52,16 @@ export default function Admin() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadingSTL, setUploadingSTL] = useState(false)
   const [saving, setSaving] = useState(false)
   const [descModalOpen, setDescModalOpen] = useState(false)
   const [catModalOpen, setCatModalOpen] = useState(false)
   const [catSearch, setCatSearch] = useState('')
+  const [productSearch, setProductSearch] = useState('')
+  const [currentAngle, setCurrentAngle] = useState(null)
+  const [stlAngleModalOpen, setStlAngleModalOpen] = useState(false)
+  const [modalDraftAngle, setModalDraftAngle] = useState(null)
+  const stlInputRef = useRef()
 
   // Materials
   const [materials, setMaterials] = useState(() => getSetting('materials', DEFAULT_MATERIALS))
@@ -117,33 +130,44 @@ export default function Admin() {
       categories: product.categories ?? (product.category ? [product.category] : []),
       material: product.material || '',
       painted: product.painted ?? false,
+      stl_url: product.stl_url || '',
+      stl_camera_angle: product.stl_camera_angle || null,
+      stl_as_cover: product.stl_as_cover ?? true,
     })
+    setCurrentAngle(product.stl_camera_angle || null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function handleCancel() {
     setEditingId(null)
     setForm(EMPTY_FORM)
+    setCurrentAngle(null)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
     try {
-      const image_url = form.image_urls[0] || form.image_url || ''
+      const image_url = form.image_urls[0] || ''
+      const payload = { ...form, price: parseFloat(form.price), image_url }
       if (editingId) {
         const original = products.find(p => p.id === editingId)
         const originalUrls = original?.image_urls || []
         const removedUrls = originalUrls.filter(u => !form.image_urls.includes(u))
         if (removedUrls.length > 0) await deleteProductImages(removedUrls)
-        await updateProduct(editingId, { ...form, price: parseFloat(form.price), image_url })
+        // If STL was replaced, delete the old one
+        if (original?.stl_url && original.stl_url !== form.stl_url) {
+          await deleteSTLFile(original.stl_url)
+        }
+        await updateProduct(editingId, payload)
         showMessage('Product updated successfully!')
       } else {
-        await createProduct({ ...form, price: parseFloat(form.price), image_url })
+        await createProduct(payload)
         showMessage('Product added successfully!')
       }
       setEditingId(null)
       setForm(EMPTY_FORM)
+      setCurrentAngle(null)
       await loadProducts()
     } catch (err) {
       showMessage(`Erro ao salvar: ${err.message}`, 'error')
@@ -152,14 +176,75 @@ export default function Admin() {
     }
   }
 
-  async function handleDelete(id, imageUrl, imageUrls) {
+  async function handleDelete(id, imageUrl, imageUrls, stlUrl) {
     if (!window.confirm('Are you sure you want to delete this product?')) return
     try {
-      await deleteProduct(id, imageUrl, imageUrls)
+      await deleteProduct(id, imageUrl, imageUrls, stlUrl)
       showMessage('Product deleted!')
       await loadProducts()
     } catch (err) {
       showMessage(`Erro ao excluir: ${err.message}`, 'error')
+    }
+  }
+
+  async function handleSTLUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.name.toLowerCase().endsWith('.stl')) {
+      showMessage('Apenas arquivos .STL são aceitos.', 'error')
+      return
+    }
+    setUploadingSTL(true)
+    try {
+      const url = await uploadSTLFile(file)
+      setForm(f => ({ ...f, stl_url: url, stl_camera_angle: null }))
+      setCurrentAngle(null)
+      setModalDraftAngle(null)
+      setStlAngleModalOpen(true)
+    } catch (err) {
+      showMessage(`Erro ao enviar STL: ${err.message}`, 'error')
+    } finally {
+      setUploadingSTL(false)
+      if (stlInputRef.current) stlInputRef.current.value = ''
+    }
+  }
+
+  function handleRemoveSTL() {
+    setForm(f => ({ ...f, stl_url: '', stl_camera_angle: null }))
+    setCurrentAngle(null)
+    setStlAngleModalOpen(false)
+  }
+
+  function openAngleModal() {
+    setModalDraftAngle(form.stl_camera_angle)
+    setStlAngleModalOpen(true)
+  }
+
+  function handleModalSaveAngle() {
+    if (!modalDraftAngle) return
+    setForm(f => ({ ...f, stl_camera_angle: modalDraftAngle }))
+    setCurrentAngle(modalDraftAngle)
+    setStlAngleModalOpen(false)
+    showMessage('Ângulo da capa salvo!')
+  }
+
+  function handleModalClose() {
+    setStlAngleModalOpen(false)
+  }
+
+  async function handleDownloadSTL() {
+    if (!form.stl_url) return
+    try {
+      const res = await fetch(form.stl_url)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${form.name || 'modelo'}.stl`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      showMessage('Erro ao baixar o arquivo STL.', 'error')
     }
   }
 
@@ -273,8 +358,33 @@ export default function Admin() {
 
       {/* Main */}
       <main className="admin-main">
+        {/* Mobile tab bar (sidebar is hidden on small screens) */}
+        <div className="admin-mobile-tabs">
+          <button
+            className={`admin-mobile-tab ${activeTab === 'products' ? 'active' : ''}`}
+            onClick={() => setActiveTab('products')}
+          >
+            ◈ Products
+          </button>
+          <button
+            className={`admin-mobile-tab ${activeTab === 'attributes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('attributes')}
+          >
+            ⬡ Attributes
+          </button>
+          <button
+            className={`admin-mobile-tab ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            ⚙ Settings
+          </button>
+          <button className="admin-mobile-tab" onClick={() => navigate('/')}>
+            ← Site
+          </button>
+        </div>
+
         <div className="admin-topbar">
-            <div>
+          <div>
             <h1>{tabTitles[activeTab]}</h1>
             <p>{tabSubtitles[activeTab]}</p>
           </div>
@@ -389,7 +499,95 @@ export default function Admin() {
                 </div>
 
                 <div className="form-group">
-                  <label>Photos {form.image_urls.length > 0 && `(${form.image_urls.length})`}</label>
+                  <label>Arquivo 3D (.STL) — capa do produto</label>
+                  {form.stl_url ? (
+                    <div className="stl-upload-preview">
+                      <div className="stl-preview-viewer stl-preview-clickable" onClick={openAngleModal}>
+                        <Suspense fallback={<div style={{ height: 180, background: '#141414' }} />}>
+                          <STLViewer
+                            key={JSON.stringify(form.stl_camera_angle)}
+                            url={form.stl_url}
+                            cameraAngle={form.stl_camera_angle}
+                            interactive={false}
+                            height={180}
+                          />
+                        </Suspense>
+                        <div className="stl-preview-overlay">
+                          {form.stl_camera_angle ? '✎ Clique para mudar o ângulo' : '⊕ Clique para definir o ângulo'}
+                        </div>
+                      </div>
+                      <div className="stl-preview-footer">
+                        {form.stl_camera_angle
+                          ? <span className="stl-angle-saved">✓ Ângulo da capa definido</span>
+                          : <span className="stl-angle-pending">Ângulo não definido — clique no modelo acima</span>
+                        }
+                        <div className="stl-preview-btns">
+                          <button
+                            type="button"
+                            className="btn-download-stl"
+                            onClick={handleDownloadSTL}
+                            title="Baixar arquivo STL"
+                          >
+                            ↓ Baixar STL
+                          </button>
+                          <button type="button" className="btn-remove-stl" onClick={handleRemoveSTL}>
+                            ✕ Remover
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="stl-upload-zone"
+                      onClick={() => stlInputRef.current?.click()}
+                    >
+                      <input
+                        ref={stlInputRef}
+                        type="file"
+                        accept=".stl,.STL"
+                        style={{ display: 'none' }}
+                        onChange={handleSTLUpload}
+                      />
+                      {uploadingSTL ? (
+                        <div className="stl-uploading">
+                          <div className="stl-spinner-sm" />
+                          Enviando...
+                        </div>
+                      ) : (
+                        <>
+                          <span className="stl-upload-icon">◈</span>
+                          <span className="stl-upload-label">Clique para enviar arquivo .STL</span>
+                          <span className="stl-upload-sub">O modelo 3D será exibido como capa do produto</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {form.stl_url && form.image_urls.length > 0 && (
+                  <div className="form-group">
+                    <label>Capa do produto</label>
+                    <div className="toggle-row">
+                      <button
+                        type="button"
+                        className={`toggle-btn ${form.stl_as_cover ? 'active-painted' : ''}`}
+                        onClick={() => setForm(f => ({ ...f, stl_as_cover: true }))}
+                      >
+                        ◈ Modelo 3D
+                      </button>
+                      <button
+                        type="button"
+                        className={`toggle-btn ${!form.stl_as_cover ? 'active-unpainted' : ''}`}
+                        onClick={() => setForm(f => ({ ...f, stl_as_cover: false }))}
+                      >
+                        ⬜ Foto
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label>Fotos {form.image_urls.length > 0 && `(${form.image_urls.length})`}</label>
                   <ImageUploadZone
                     images={form.image_urls}
                     crops={form.image_crops}
@@ -406,7 +604,7 @@ export default function Admin() {
                       Cancel
                     </button>
                   )}
-                  <button type="submit" className="btn-save" disabled={saving || uploading}>
+                  <button type="submit" className="btn-save" disabled={saving || uploading || uploadingSTL}>
                     {saving ? 'Saving...' : editingId ? 'Save Changes' : '+ Add Product'}
                   </button>
                 </div>
@@ -416,6 +614,13 @@ export default function Admin() {
             <section className="admin-products-card">
               <div className="products-header">
                 <h2>Products</h2>
+                <input
+                  type="text"
+                  className="products-search"
+                  placeholder="Buscar por nome..."
+                  value={productSearch}
+                  onChange={e => setProductSearch(e.target.value)}
+                />
               </div>
               {loading ? (
                 <div className="products-loading">
@@ -430,15 +635,28 @@ export default function Admin() {
                 </div>
               ) : (
                 <div className="products-list">
-                  {products.map(p => {
+                  {products.filter(p =>
+                    p.name.toLowerCase().includes(productSearch.toLowerCase())
+                  ).map(p => {
+                    const showSTL = !!p.stl_url && (p.stl_as_cover ?? true)
                     const thumb = p.image_urls?.[0] || p.image_url
                     return (
                       <div key={p.id} className={`product-row ${editingId === p.id ? 'editing' : ''}`}>
                         <div className="product-thumb">
-                          {thumb
-                            ? <img src={thumb} alt={p.name} />
-                            : <div className="thumb-placeholder">◈</div>
-                          }
+                          {showSTL ? (
+                            <Suspense fallback={<div className="thumb-placeholder">◈</div>}>
+                              <STLViewer
+                                url={p.stl_url}
+                                cameraAngle={p.stl_camera_angle}
+                                interactive={false}
+                                height={56}
+                              />
+                            </Suspense>
+                          ) : thumb ? (
+                            <img src={thumb} alt={p.name} />
+                          ) : (
+                            <div className="thumb-placeholder">◈</div>
+                          )}
                         </div>
                         <div className="product-info">
                           <strong>{p.name}</strong>
@@ -447,7 +665,7 @@ export default function Admin() {
                         </div>
                         <div className="product-actions">
                           <button className="btn-edit" onClick={() => handleEdit(p)} title="Edit">✎</button>
-                          <button className="btn-delete" onClick={() => handleDelete(p.id, p.image_url, p.image_urls)} title="Delete">✕</button>
+                          <button className="btn-delete" onClick={() => handleDelete(p.id, p.image_url, p.image_urls, p.stl_url)} title="Delete">✕</button>
                         </div>
                       </div>
                     )
@@ -580,6 +798,44 @@ export default function Admin() {
           </div>
         )}
       </main>
+
+      {/* ── STL Angle picker modal ── */}
+      {stlAngleModalOpen && form.stl_url && (
+        <div className="desc-modal-backdrop" onClick={handleModalClose}>
+          <div className="stl-angle-modal" onClick={e => e.stopPropagation()}>
+            <div className="desc-modal-header">
+              <h3>Definir ângulo da capa</h3>
+              <button type="button" className="desc-modal-close" onClick={handleModalClose}>✕</button>
+            </div>
+            <p className="stl-modal-hint">
+              Gire o modelo até o ângulo desejado e clique em <strong>Salvar ângulo</strong>.
+            </p>
+            <div className="stl-modal-viewer">
+              <Suspense fallback={<div style={{ height: 400, background: '#141414' }} />}>
+                <STLViewer
+                  url={form.stl_url}
+                  cameraAngle={modalDraftAngle ?? form.stl_camera_angle}
+                  onAngleChange={setModalDraftAngle}
+                  height={400}
+                />
+              </Suspense>
+            </div>
+            <div className="desc-modal-footer">
+              <button type="button" className="btn-cancel" onClick={handleModalClose}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn-save"
+                onClick={handleModalSaveAngle}
+                disabled={!modalDraftAngle}
+              >
+                Salvar ângulo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Category selector modal ── */}
       {catModalOpen && (
