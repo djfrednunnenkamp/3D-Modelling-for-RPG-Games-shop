@@ -148,6 +148,8 @@ export default function STLViewer({
             enablePan={false}
             minDistance={1}
             maxDistance={12}
+            mouseButtons={{ LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE }}
+            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
             onChange={handleOrbitChange}
           />
         )}
