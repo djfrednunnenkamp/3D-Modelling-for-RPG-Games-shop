@@ -665,6 +665,9 @@ export default function Admin() {
                         </div>
                         <div className="product-actions">
                           <button className="btn-edit" onClick={() => handleEdit(p)} title="Edit">✎</button>
+                          {p.stl_url && (
+                            <a className="btn-download" href={p.stl_url} download title="Download STL">↓</a>
+                          )}
                           <button className="btn-delete" onClick={() => handleDelete(p.id, p.image_url, p.image_urls, p.stl_url)} title="Delete">✕</button>
                         </div>
                       </div>

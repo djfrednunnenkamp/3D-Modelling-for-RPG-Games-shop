@@ -104,6 +104,15 @@ export default function STLViewer({
     })
   }
 
+  function handleZoom(direction) {
+    if (!orbitRef.current) return
+    const ctrl = orbitRef.current
+    if (direction === 'in') ctrl.dollyIn(1.25)
+    else ctrl.dollyOut(1.25)
+    ctrl.update()
+    handleOrbitChange()
+  }
+
   if (errored) {
     return <div className="stl-error">Modelo 3D indisponível</div>
   }
@@ -135,7 +144,7 @@ export default function STLViewer({
         {controlsEnabled && (
           <OrbitControls
             ref={orbitRef}
-            enableZoom={interactive}
+            enableZoom={interactive || !!onAngleChange}
             enablePan={false}
             minDistance={1}
             maxDistance={12}
@@ -144,6 +153,12 @@ export default function STLViewer({
         )}
       </Canvas>
 
+      {!!onAngleChange && loaded && (
+        <div className="stl-zoom-controls">
+          <button className="stl-zoom-btn" onClick={() => handleZoom('in')} title="Zoom in">+</button>
+          <button className="stl-zoom-btn" onClick={() => handleZoom('out')} title="Zoom out">−</button>
+        </div>
+      )}
     </div>
   )
 }

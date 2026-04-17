@@ -74,6 +74,39 @@
   z-index: 2;
 }
 
+/* Zoom controls overlay (admin angle picker) */
+.stl-zoom-controls {
+  position: absolute;
+  bottom: 0.65rem;
+  right: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 3;
+}
+
+.stl-zoom-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.stl-zoom-btn:hover {
+  background: rgba(249, 115, 22, 0.55);
+  border-color: #f97316;
+  color: #fff;
+}
+
 /* Error state */
 .stl-error {
   display: flex;
