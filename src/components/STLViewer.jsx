@@ -145,11 +145,9 @@ export default function STLViewer({
           <OrbitControls
             ref={orbitRef}
             enableZoom={interactive || !!onAngleChange}
-            enablePan={false}
+            enablePan={true}
             minDistance={1}
             maxDistance={12}
-            mouseButtons={{ LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE }}
-            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
             onChange={handleOrbitChange}
           />
         )}
