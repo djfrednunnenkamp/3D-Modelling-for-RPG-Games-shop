@@ -74,6 +74,32 @@
   z-index: 2;
 }
 
+/* Reset button overlay */
+.stl-reset-btn {
+  position: absolute;
+  bottom: 0.65rem;
+  left: 0.65rem;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  z-index: 3;
+}
+
+.stl-reset-btn:hover {
+  background: rgba(249, 115, 22, 0.55);
+  border-color: #f97316;
+  color: #fff;
+}
+
 /* Zoom controls overlay (admin angle picker) */
 .stl-zoom-controls {
   position: absolute;

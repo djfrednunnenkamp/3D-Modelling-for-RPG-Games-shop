@@ -1,7 +1,7 @@
 import { Canvas, useThree, useLoader } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { STLLoader } from 'three/addons/loaders/STLLoader.js'
-import { Suspense, useRef, useEffect, useState, useMemo } from 'react'
+import { Suspense, useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import * as THREE from 'three'
 import './STLViewer.css'
 
@@ -53,6 +53,31 @@ function LoadSignal({ onLoad }) {
   return null
 }
 
+// Resets camera to the initial angle when resetTrigger changes
+function CameraReset({ angle, orbitRef, resetTrigger, onAngleChange }) {
+  const { camera } = useThree()
+
+  useEffect(() => {
+    if (!resetTrigger) return
+    const [x, y, z] = angleToPosition(angle)
+    camera.position.set(x, y, z)
+    camera.lookAt(0, 0, 0)
+    if (orbitRef?.current) {
+      orbitRef.current.target.set(0, 0, 0)
+      orbitRef.current.update()
+    }
+    if (onAngleChange) {
+      onAngleChange({
+        azimuth: angle?.azimuth ?? 0.4,
+        polar: angle?.polar ?? 1.05,
+        zoom: angle?.zoom ?? 3.5,
+      })
+    }
+  }, [resetTrigger])
+
+  return null
+}
+
 // Sets camera after OrbitControls mounts, respecting the saved angle
 function CameraInit({ angle, orbitRef }) {
   const { camera } = useThree()
@@ -89,6 +114,9 @@ export default function STLViewer({
   const orbitRef = useRef()
   const [loaded, setLoaded] = useState(false)
   const [errored, setErrored] = useState(false)
+  const [resetTrigger, setResetTrigger] = useState(0)
+
+  const handleReset = useCallback(() => setResetTrigger(t => t + 1), [])
 
   const initialPos = useMemo(() => angleToPosition(cameraAngle), []) // intentionally omit dep: set once
 
@@ -139,6 +167,7 @@ export default function STLViewer({
           <STLMesh url={url} />
           <LoadSignal onLoad={() => setLoaded(true)} />
           {cameraAngle && <CameraInit angle={cameraAngle} orbitRef={orbitRef} />}
+          <CameraReset angle={cameraAngle} orbitRef={orbitRef} resetTrigger={resetTrigger} onAngleChange={onAngleChange} />
         </Suspense>
 
         {controlsEnabled && (
@@ -152,6 +181,10 @@ export default function STLViewer({
           />
         )}
       </Canvas>
+
+      {controlsEnabled && loaded && (
+        <button className="stl-reset-btn" onClick={handleReset} title="Resetar posição">⌂</button>
+      )}
 
       {!!onAngleChange && loaded && (
         <div className="stl-zoom-controls">
