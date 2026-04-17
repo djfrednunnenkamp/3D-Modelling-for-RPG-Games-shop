@@ -56,10 +56,13 @@ function LoadSignal({ onLoad }) {
 // Resets camera to the initial angle when resetTrigger changes
 function CameraReset({ angle, orbitRef, resetTrigger, onAngleChange }) {
   const { camera } = useThree()
+  // Capture angle at mount only — never update, so reset always goes back to the original position
+  const initialAngle = useRef(angle)
 
   useEffect(() => {
     if (!resetTrigger) return
-    const [x, y, z] = angleToPosition(angle)
+    const ang = initialAngle.current
+    const [x, y, z] = angleToPosition(ang)
     camera.position.set(x, y, z)
     camera.lookAt(0, 0, 0)
     if (orbitRef?.current) {
@@ -68,9 +71,9 @@ function CameraReset({ angle, orbitRef, resetTrigger, onAngleChange }) {
     }
     if (onAngleChange) {
       onAngleChange({
-        azimuth: angle?.azimuth ?? 0.4,
-        polar: angle?.polar ?? 1.05,
-        zoom: angle?.zoom ?? 3.5,
+        azimuth: ang?.azimuth ?? 0.4,
+        polar: ang?.polar ?? 1.05,
+        zoom: ang?.zoom ?? 3.5,
       })
     }
   }, [resetTrigger])
